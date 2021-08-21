@@ -3,7 +3,7 @@ import { Course } from "./course";
 import { CourseService } from "./course.service";
 import { LOCALE_ID } from '@angular/core';
 
-providers: [{provide: LOCALE_ID, useValue: 'pt-BR'}]
+providers: [{ provide: LOCALE_ID, useValue: 'pt-BR' }]
 
 
 
@@ -12,30 +12,51 @@ providers: [{provide: LOCALE_ID, useValue: 'pt-BR'}]
     templateUrl: './course-list.component.html'
 })
 
-export class CourseListComponent implements OnInit{
-    
+export class CourseListComponent implements OnInit {
+
 
     filteredCourses: Course[] = [];
 
     _courses: Course[] = [];
 
-    _filterBy: string = "";  
+    _filterBy: string = "";
 
-    constructor(private courseService: CourseService){   }
+    constructor(private courseService: CourseService) { }
 
     ngOnInit(): void {
-        this._courses = this.courseService.retrieveAll();
-        this.filteredCourses = this._courses;
+        this.retrieveAll();
+
+    }
+
+    retrieveAll(): void {
+        this.courseService.retrieveAll().subscribe({
+            next: courses => {
+                this._courses = courses;
+                this.filteredCourses = this._courses;
+            },
+            error: err => console.log('Error', err)
+        })
+    }
+
+    deleteById(courseId: number): void{
+        this.courseService.deleteById(courseId).subscribe({
+            next: () => {
+                console.log("Deleted with sucess");
+                this.retrieveAll();
+            },
+            error: err => console.log('Error', err)
+        });
     }
 
 
-    set filter(value: string) { 
+
+    set filter(value: string) {
         this._filterBy = value;
 
         this.filteredCourses = this._courses.filter((course: Course) => course.name.toLocaleLowerCase().indexOf(this._filterBy.toLocaleLowerCase()) > -1);
     }
 
-    get filter() { 
+    get filter() {
         return this._filterBy;
     }
 }
